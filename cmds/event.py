@@ -9,6 +9,7 @@ import random
 import codecs
 import urllib.request
 import ehapi
+import pytz
 from discord.ext import commands
 from core.classes import Cog_Extension
 from plurk_oauth import PlurkAPI
@@ -279,6 +280,11 @@ class Event(Cog_Extension):
          uId=status.user.screen_name
          uName=status.user.name
          timestamp=status.created_at
+
+         timezone = pytz.timezone(self.jdata['tweepy_timezone'])  # Setting timezone
+         utc_now = pytz.utc.localize(timestamp) # UTC
+         tz_now = utc_now.astimezone(timezone) # Converting to specified timezone
+
          retweet_count=status.retweet_count
          favorite_count=status.favorite_count
          imageProfile_url = status.user.profile_image_url_https.replace('_normal','_400x400')
@@ -288,7 +294,7 @@ class Event(Cog_Extension):
          except:
              description=status.full_text
 
-         embed=discord.Embed(title='',url="https://twitter.com/"+uId+"/status/"+strf, color=colonn, timestamp=timestamp)
+         embed=discord.Embed(title='',url="https://twitter.com/"+uId+"/status/"+strf, color=colonn, timestamp=tz_now)
          embed.set_author(name=uName+"(@"+uId+")", url="https://twitter.com/"+uId, icon_url=ICON_TWITTER)
          embed.add_field(name="Retweets", value=retweet_count, inline=True)
          embed.add_field(name="Likes", value=favorite_count, inline=True)
