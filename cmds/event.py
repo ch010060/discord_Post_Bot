@@ -298,7 +298,7 @@ class Event(Cog_Extension):
          embed.set_author(name=uName+"(@"+uId+")", url="https://twitter.com/"+uId, icon_url=ICON_TWITTER)
          embed.add_field(name="Retweets", value=retweet_count, inline=True)
          embed.add_field(name="Likes", value=favorite_count, inline=True)
-         embed.description = description
+         embed.description = self.html_decode(description)
          embed.set_thumbnail(url=imageProfile_url)
          embed.set_footer(text="Twitter ")
          try:
@@ -657,7 +657,24 @@ class Event(Cog_Extension):
    def cleanhtml(self,raw_html):
       cleanr = re.compile('<.*?>')
       cleantext = re.sub(cleanr, '', raw_html)
-      return cleantext
+      return self.html_decode(cleantext)
+
+   def html_decode(self,s):
+        """
+        Returns the ASCII decoded version of the given HTML string. This does
+        NOT remove normal HTML tags like <p>.
+        """
+        htmlCodes = (
+                (",", '&#44;'),
+                ("'", '&#39;'),
+                ('"', '&quot;'),
+                ('＞', '&gt;'),
+                ('＜', '&lt;'),
+                ('&', '&amp;')
+            )
+        for code in htmlCodes:
+            s = s.replace(code[1], code[0])
+        return s
        
 
 def setup(bot):
