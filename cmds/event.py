@@ -491,11 +491,12 @@ class Event(Cog_Extension):
       a=self.p15.search(msg.content)
       if a!=None:
             url = re.search('(?P<url>https?:\/\/www\.melonbooks\.co\.jp\/detail\/detail.php\?product_id=\d+)', msg.content).group("url")
-            image_url,title,circle,author,release_date,type,page,description,age = self.melonbooksMetadata(url)
+            image_url,title,circle,author,release_date,type,page,description,age,price = self.melonbooksMetadata(url)
             colonn = random.randint(0,255)*65536+random.randint(0,255)*256+random.randint(0,255)
             embed=discord.Embed(title=title,url=url, color=colonn)
             embed.set_author(name=author+" ("+circle+")", url="https://www.melonbooks.co.jp/search/search.php?name="+author+"&text_type=author")
             embed.set_footer(text=page + " pages")
+            embed.add_field(name="価格", value=price, inline=True)
             embed.add_field(name="発行日", value=release_date, inline=True)
             embed.add_field(name="ジャンル", value=type, inline=True)
             embed.add_field(name="作品種別", value=age, inline=True)
@@ -535,6 +536,7 @@ class Event(Cog_Extension):
             circle = tree.xpath('//meta[@property="og:title"]/@content')[0].rsplit("（",1)[1].rsplit("）",1)[0]
             description = ''.join(tree.xpath('//*[@style="padding:5px;border:1px dotted #ccc;"]/text()')).replace(" ", "")
             age = tree.xpath('//*[@class="stripe"]/tr/th[contains(text(), "作品種別")]/../td/text()')[0]
+            price =  tree.xpath('//*[@class="info"]/form/div/table/tr/th[contains(text(), "価格（税込み）")]/../td/text()')[0].replace("&yen;", "¥")
             # Some works without following attribute
             try:
                 type = tree.xpath('//*[@class="stripe"]/tr/th[contains(text(), "ジャンル")]/../td/a/text()')[0]
@@ -553,7 +555,7 @@ class Event(Cog_Extension):
             except:
                 page = "N/A"
             
-            return image_url,title,circle,author,release_date,type,page,description,age
+            return image_url,title,circle,author,release_date,type,page,description,age,price
 
    # get pixiv metadata
    def pixivMetadata(self,id):
