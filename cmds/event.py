@@ -561,8 +561,8 @@ class Event(Cog_Extension):
    def pixivMetadata(self,id):
         r =  requests.get("https://www.pixiv.net/artworks/"+id,headers = self.headers)
         soup = BeautifulSoup(r.text, 'html.parser')
-        meta=soup.find_all('meta')
-        content=meta[25].get('content')
+        meta=soup.select("meta#meta-preload-data")
+        content=meta[0].get('content')
         content=content.replace('false','\"false\"').replace('true','\"true\"').replace('null','\"null\"')
 
         jdata=json.loads(content)
