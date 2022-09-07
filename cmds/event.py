@@ -536,8 +536,12 @@ class Event(Cog_Extension):
             circle = tree.xpath('//meta[@property="og:title"]/@content')[0].rsplit("（",1)[1].rsplit("）",1)[0]
             description = ''.join(tree.xpath('//*[@style="padding:5px;border:1px dotted #ccc;"]/text()')).replace(" ", "")
             age = tree.xpath('//*[@class="stripe"]/tr/th[contains(text(), "作品種別")]/../td/text()')[0]
-            price =  tree.xpath('//*[@class="info"]/form/div/table/tr/th[contains(text(), "価格（税込み）")]/../td/text()')[0].replace("&yen;", "¥")
+
             # Some works without following attribute
+            try:
+                price =  tree.xpath('//*[@class="drop_cart"]/table/tr/th[contains(text(), "価格（税込み）")]/../td/text()')[0].replace("&yen;", "¥")
+            except:
+                price = "N/A"
             try:
                 type = tree.xpath('//*[@class="stripe"]/tr/th[contains(text(), "ジャンル")]/../td/a/text()')[0]
             except:
