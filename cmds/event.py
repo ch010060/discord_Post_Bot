@@ -16,6 +16,7 @@ from plurk_oauth import PlurkAPI
 from pathlib import Path
 from bs4 import BeautifulSoup
 from lxml import html
+from lxml import etree
 
 ICON_PIXIV = "https://cdn.discordapp.com/attachments/881168385507999798/883280819085520916/pixiv.png"
 ICON_TWITTER = "https://cdn.discordapp.com/attachments/881168385507999798/883411224426070086/pngegg.png"
@@ -494,7 +495,7 @@ class Event(Cog_Extension):
             image_url,title,circle,author,release_date,type,page,description,age,price = self.melonbooksMetadata(url)
             colonn = random.randint(0,255)*65536+random.randint(0,255)*256+random.randint(0,255)
             embed=discord.Embed(title=title,url=url, color=colonn)
-            embed.set_author(name=author+" ("+circle+")", url="https://www.melonbooks.co.jp/search/search.php?name="+author+"&text_type=author")
+            embed.set_author(name=author+" ("+circle+")", url="https://www.melonbooks.co.jp/search/search.php?name="+author.replace(" ","%20")+"&text_type=author")
             embed.set_footer(text=page + " pages")
             embed.add_field(name="価格", value=price, inline=True)
             embed.add_field(name="発行日", value=release_date, inline=True)
@@ -530,32 +531,33 @@ class Event(Cog_Extension):
         if r.status_code != 200:
             print("Connect failed")
         else:
-            tree = html.fromstring(r.content)
+            myparser = etree.HTMLParser(encoding="utf-8")
+            tree = etree.HTML(r.content, parser=myparser)
             image_url = tree.xpath('//meta[@property="og:image"]/@content')[0].split('&',1)[0]
             title = tree.xpath('//meta[@property="og:title"]/@content')[0].rsplit("（",1)[0]
-            circle = tree.xpath('//meta[@property="og:title"]/@content')[0].rsplit("（",1)[1].rsplit("）",1)[0]
-            description = ''.join(tree.xpath('//*[@style="padding:5px;border:1px dotted #ccc;"]/text()')).replace(" ", "")
-            age = tree.xpath('//*[@class="stripe"]/tr/th[contains(text(), "作品種別")]/../td/text()')[0]
+            circle = tree.xpath('//*[@class="table-wrapper"]/table/tr/th[contains(text(), "サークル名")]/../td/a/text()')[0].replace("&nbsp;","").rsplit("(",1)[0]
+            description = tree.xpath('//*[@class="item-detail __light mt24"]/div/p/text()')[0].strip()
+            age = tree.xpath('//*[@class="table-wrapper"]/table/tr/th[contains(text(), "作品種別")]/../td/text()')[0]
 
             # Some works without following attribute
             try:
-                price =  tree.xpath('//*[@class="drop_cart"]/table/tr/th[contains(text(), "価格（税込み）")]/../td/text()')[0].replace("&yen;", "¥")
+                price =  tree.xpath('//*[@class="yen __discount"]/text()')[0].replace(" ", "").replace("&yen;", "¥")
             except:
                 price = "N/A"
             try:
-                type = tree.xpath('//*[@class="stripe"]/tr/th[contains(text(), "ジャンル")]/../td/a/text()')[0]
+                type = tree.xpath('//*[@class="table-wrapper"]/table/tr/th[contains(text(), "ジャンル")]/../td/a/text()')[0]
             except:
                 type = "N/A"
             try:
-                release_date = tree.xpath('//*[@class="stripe"]/tr/th[contains(text(), "発行日")]/../td/text()')[0]
+                release_date = tree.xpath('//*[@class="table-wrapper"]/table/tr/th[contains(text(), "発行日")]/../td/text()')[0]
             except:
                 release_date = "N/A"
             try:
-                author = tree.xpath('//*[@class="stripe"]/tr/th[contains(text(), "作家名")]/../td/a/text()')[0]
+                author = tree.xpath('//*[@class="table-wrapper"]/table/tr/th[contains(text(), "作家名")]/../td/a/text()')[0]
             except:
                 author = ""
             try:
-                page = tree.xpath('//*[@class="stripe"]/tr/th[contains(text(), "総ページ数・CG数・曲数")]/../td/text()')[0]
+                page = tree.xpath('//*[@class="table-wrapper"]/table/tr/th[contains(text(), "総ページ数・CG数・曲数")]/../td/text()')[0]
             except:
                 page = "N/A"
             
