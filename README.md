@@ -12,6 +12,8 @@ pip install plurk-oauth
 pip install tweepy
 pip install requests
 pip install bs4
+pip install validators
+pip install aiofiles
 ```
 3. Fillin the config file with your token => setting.json
 
